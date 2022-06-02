@@ -4,6 +4,9 @@ import $ from "./lib/querySelector";
 import crel from "./lib/crel";
 import blobToBytes from "./lib/blobToBytes";
 
+// TODO: Flesh this out.
+const formatBytes = (bytes) => `${bytes} bytes`;
+
 const Status = {
   NotSubmitted: 0,
   Processing: 1,
@@ -61,6 +64,14 @@ window.onload = () => {
       console.error(err);
       return fail("Could not decompress file");
     }
+
+    setState({
+      status: Status.Processed,
+      results: [
+        `Original size: ${formatBytes(file.size)}`,
+        `Uncompressed size: ${formatBytes(inflated.length)}`,
+      ],
+    });
   });
 
   const render = () => {
@@ -83,6 +94,7 @@ window.onload = () => {
         break;
 
       case Status.Processed:
+        newResultsContents = state.results.map((str) => crel("li", {}, [str]));
         break;
 
       default:

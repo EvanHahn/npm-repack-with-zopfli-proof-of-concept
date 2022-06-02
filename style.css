@@ -1,5 +1,6 @@
 html {
   font-family: sans-serif;
+  line-height: 1.5em;
 }
 
 body {
@@ -9,9 +10,10 @@ body {
 }
 
 h1,
+h2,
 noscript,
 p,
-li {
+ol li {
   margin-bottom: 2rem;
 }
 
