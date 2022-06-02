@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Repack with Zopfli</title>
+    <script type="module" crossorigin src="/assets/index.81470de9.js"></script>
+    <link rel="stylesheet" href="/assets/index.810f92ec.css">
+  </head>
+  <body>
+    <h1>Repack with Zopfli</h1>
+    <p>
+      A proof-of-concept. Doesn't upload any files; everything happens in the
+      browser. See
+      <a
+        href="https://github.com/npm/rfcs/pull/595"
+        rel="noreferrer noopener"
+        target="_blank"
+        >npm/rfcs#595</a
+      >.
+    </p>
+
+    <noscript>
+      <p class="error">This page requires JavaScript.</p>
+    </noscript>
+
+    <ol>
+      <li>
+        Get a tarball of your favorite npm package with
+        <code>npm pack $PACKAGE_NAME</code>. For example, try
+        <code>npm pack express</code>.
+      </li>
+
+      
+
+      <form id="upload-form">
+        <li>
+          <label for="upload-input">Select it here:</label>
+          <input
+            type="file"
+            id="upload-input"
+            accept=".tgz, .tar.gz"
+            required
+          />
+        </li>
+        <li>
+          <label for="iterations-input">Zopfli should run</label>
+          <input
+            type="number"
+            id="iterations-input"
+            value="1"
+            min="1"
+            max="1000"
+            required
+          />
+          <label for="iterations-input"
+            >iteration(s). More iterations takes longer, but improves
+            compression</label
+          >
+        </li>
+        <li>
+          Click
+          <input id="submit-button" type="submit" value="this button" /> to
+          start the process
+        </li>
+      </form>
+    </ol>
+
+    <section id="results" hidden>
+      <h2>Results</h2>
+      <div id="results-contents"></div>
+    </section>
+  </body>
+</html>
