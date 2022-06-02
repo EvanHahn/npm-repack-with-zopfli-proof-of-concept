@@ -15,10 +15,8 @@ const Status = {
 
 window.onload = () => {
   const uploadForm = $("#upload-form");
-  const uploadStep = $("#upload-step");
   const uploadInput = $("#upload-input");
   const iterationsInput = $("#iterations-input");
-  const submitStep = $("#submit-step");
   const submitButton = $("#submit-button");
   const resultsSection = $("#results");
   const resultsContents = $("#results-contents");
