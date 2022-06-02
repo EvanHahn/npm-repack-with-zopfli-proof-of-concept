@@ -12,10 +12,14 @@
   },
   "devDependencies": {
     "eslint": "^8.16.0",
+    "patch-package": "^6.4.7",
     "prettier": "^2.6.2",
     "vite": "^2.9.9"
   },
   "dependencies": {
-    "pako": "^2.0.4"
+    "@gfx/zopfli": "^1.0.15",
+    "humanize-duration": "^3.27.2",
+    "pako": "^2.0.4",
+    "wasm-zopfli": "^1.0.2"
   }
 }

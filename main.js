@@ -1,8 +1,12 @@
 import "./style.css";
 import * as pako from "pako";
+import * as zopfli from "@gfx/zopfli/dist/index.js";
+import humanizeDuration from "humanize-duration";
 import $ from "./lib/querySelector";
 import crel from "./lib/crel";
 import blobToBytes from "./lib/blobToBytes";
+
+const ZOPFLI_ITERATIONS = 1;
 
 // TODO: Flesh this out.
 const formatBytes = (bytes) => `${bytes} bytes`;
@@ -65,11 +69,35 @@ window.onload = () => {
       return fail("Could not decompress file");
     }
 
+    let zopflid;
+    let duration;
+    try {
+      const start = Date.now();
+      zopflid = await zopfli.gzipAsync(inflated, {
+        numiterations: ZOPFLI_ITERATIONS,
+        verbose: true,
+        blocksplitting: false,
+      });
+      duration = Date.now() - start;
+    } catch (err) {
+      console.error(err);
+      return fail("Could not re-compress file with Zopfli");
+    }
+
+    const savings = file.size - zopflid.length;
+    const percentSaved = Math.round((savings / file.size) * 100);
+
+    const formattedDuration = humanizeDuration(duration);
+
     setState({
       status: Status.Processed,
       results: [
         `Original size: ${formatBytes(file.size)}`,
         `Uncompressed size: ${formatBytes(inflated.length)}`,
+        `Recompressed size: ${formatBytes(
+          zopflid.length
+        )}, saving ${formatBytes(savings)} (${percentSaved}%)`,
+        `Ran Zopfli with ${ZOPFLI_ITERATIONS} iteration(s). Took ${formattedDuration}`,
       ],
     });
   });
@@ -84,7 +112,9 @@ window.onload = () => {
 
       case Status.Processing:
         canSubmit = false;
-        newResultsContents = [crel("p", {}, ["Processing..."])];
+        newResultsContents = [
+          crel("p", {}, ["Processing (this can take several seconds)..."]),
+        ];
         break;
 
       case Status.ProcessingFailed:
@@ -94,7 +124,13 @@ window.onload = () => {
         break;
 
       case Status.Processed:
-        newResultsContents = state.results.map((str) => crel("li", {}, [str]));
+        newResultsContents = [
+          crel(
+            "ul",
+            {},
+            state.results.map((str) => crel("li", {}, [str]))
+          ),
+        ];
         break;
 
       default:
