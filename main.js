@@ -6,9 +6,6 @@ import $ from "./lib/querySelector";
 import crel from "./lib/crel";
 import blobToBytes from "./lib/blobToBytes";
 
-// TODO: Flesh this out.
-const formatBytes = (bytes) => `${bytes} bytes`;
-
 const Status = {
   NotSubmitted: 0,
   Processing: 1,
@@ -117,11 +114,9 @@ window.onload = () => {
     setState({
       status: Status.Processed,
       results: [
-        `Original size: ${formatBytes(file.size)}`,
-        `Uncompressed size: ${formatBytes(inflated.length)}`,
-        `Recompressed size: ${formatBytes(
-          zopflid.length
-        )}, saving ${formatBytes(savings)} (${percentSaved}%)`,
+        `Original size: ${file.size} bytes`,
+        `Uncompressed size: ${inflated.length} bytes`,
+        `Recompressed size: ${zopflid.length} bytes, saving ${savings} bytes (${percentSaved}%)`,
         `Ran Zopfli with ${numiterations} iteration(s). Took ${formattedDuration}`,
       ],
     });
