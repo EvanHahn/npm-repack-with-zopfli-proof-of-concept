@@ -6,8 +6,6 @@ import $ from "./lib/querySelector";
 import crel from "./lib/crel";
 import blobToBytes from "./lib/blobToBytes";
 
-const ZOPFLI_ITERATIONS = 1;
-
 // TODO: Flesh this out.
 const formatBytes = (bytes) => `${bytes} bytes`;
 
@@ -22,6 +20,7 @@ window.onload = () => {
   const uploadForm = $("#upload-form");
   const uploadStep = $("#upload-step");
   const uploadInput = $("#upload-input");
+  const iterationsInput = $("#iterations-input");
   const submitStep = $("#submit-step");
   const submitButton = $("#submit-button");
   const resultsSection = $("#results");
@@ -50,7 +49,20 @@ window.onload = () => {
 
     const file = uploadInput.files[0];
     if (!file) {
-      return fail("Could not find file");
+      return fail("Could not find file. Did you select it correctly?");
+    }
+
+    const numiterations = Number(iterationsInput.value);
+    if (
+      !Number.isInteger(numiterations) ||
+      numiterations < 1 ||
+      numiterations > 2 ** 32
+    ) {
+      return fail("Invalid number of iterations. Did you input it correctly?");
+    }
+
+    if (file.size < 3) {
+      return fail("File seems too small. Is it a valid .tgz?");
     }
 
     let fileAsBytes;
@@ -66,7 +78,7 @@ window.onload = () => {
       inflated = pako.inflate(fileAsBytes);
     } catch (err) {
       console.error(err);
-      return fail("Could not decompress file");
+      return fail("Could not decompress file. Is it a .tgz?");
     }
 
     let zopflid;
@@ -74,7 +86,7 @@ window.onload = () => {
     try {
       const start = Date.now();
       zopflid = await zopfli.gzipAsync(inflated, {
-        numiterations: ZOPFLI_ITERATIONS,
+        numiterations,
         verbose: true,
         blocksplitting: false,
       });
@@ -110,7 +122,7 @@ window.onload = () => {
         `Recompressed size: ${formatBytes(
           zopflid.length
         )}, saving ${formatBytes(savings)} (${percentSaved}%)`,
-        `Ran Zopfli with ${ZOPFLI_ITERATIONS} iteration(s). Took ${formattedDuration}`,
+        `Ran Zopfli with ${numiterations} iteration(s). Took ${formattedDuration}`,
       ],
     });
   });
@@ -151,6 +163,7 @@ window.onload = () => {
     }
 
     uploadInput.toggleAttribute("disabled", !canSubmit);
+    iterationsInput.toggleAttribute("disabled", !canSubmit);
     submitButton.toggleAttribute("disabled", !canSubmit);
 
     resultsSection.toggleAttribute("hidden", newResultsContents.length === 0);

@@ -20,3 +20,7 @@ ol li {
 .error {
   color: red;
 }
+
+#iterations-input {
+  width: 5rem;
+}
