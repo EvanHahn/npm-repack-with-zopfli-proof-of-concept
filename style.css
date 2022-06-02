@@ -8,13 +8,13 @@ body {
   margin: 0 auto;
 }
 
-noscript {
-  color: red;
-}
-
 h1,
 noscript,
 p,
 li {
   margin-bottom: 2rem;
+}
+
+.error {
+  color: red;
 }
