@@ -13,6 +13,75 @@ const Status = {
   Processed: 3,
 };
 
+async function process(file, numiterations) {
+  if (file.size < 3) {
+    return {
+      ok: false,
+      errorMessage: "File seems too small. Is it a valid .tgz?",
+    };
+  }
+
+  let fileAsBytes;
+  try {
+    fileAsBytes = await blobToBytes(file);
+  } catch (err) {
+    console.error(err);
+    return { ok: false, errorMessage: "Could not read file" };
+  }
+
+  let inflated;
+  try {
+    inflated = pako.inflate(fileAsBytes);
+  } catch (err) {
+    console.error(err);
+    return {
+      ok: false,
+      errorMessage: "Could not decompress file. Is it a .tgz?",
+    };
+  }
+
+  let zopflid;
+  let zopfliDuration;
+  try {
+    const start = Date.now();
+    zopflid = await zopfli.gzipAsync(inflated, {
+      numiterations,
+      verbose: true,
+      blocksplitting: false,
+    });
+    zopfliDuration = Date.now() - start;
+  } catch (err) {
+    console.error(err);
+    return {
+      ok: false,
+      errorMessage: "Could not re-compress file with Zopfli",
+    };
+  }
+
+  let reinflated;
+  try {
+    reinflated = pako.inflate(zopflid);
+  } catch (err) {
+    console.error(err);
+    return { ok: false, errorMessage: "Could not decompress Zopfli'd file" };
+  }
+  if (inflated.length !== reinflated.length) {
+    return {
+      ok: false,
+      errorMessage:
+        "Zopfli compressed successfully, but de-compressing it resulted in a different file!",
+    };
+  }
+
+  return {
+    ok: true,
+    originalSize: file.size,
+    uncompressedSize: inflated.length,
+    zopfliSize: zopflid.length,
+    zopfliDuration,
+  };
+}
+
 window.onload = () => {
   const uploadForm = $("#upload-form");
   const uploadInput = $("#upload-input");
@@ -56,68 +125,23 @@ window.onload = () => {
       return fail("Invalid number of iterations. Did you input it correctly?");
     }
 
-    if (file.size < 3) {
-      return fail("File seems too small. Is it a valid .tgz?");
-    }
-
-    let fileAsBytes;
-    try {
-      fileAsBytes = await blobToBytes(file);
-    } catch (err) {
-      console.error(err);
-      return fail("Could not read file");
-    }
-
-    let inflated;
-    try {
-      inflated = pako.inflate(fileAsBytes);
-    } catch (err) {
-      console.error(err);
-      return fail("Could not decompress file. Is it a .tgz?");
-    }
-
-    let zopflid;
-    let duration;
-    try {
-      const start = Date.now();
-      zopflid = await zopfli.gzipAsync(inflated, {
-        numiterations,
-        verbose: true,
-        blocksplitting: false,
+    const result = await process(file, numiterations);
+    if (result.ok) {
+      const savings = result.originalSize - result.zopfliSize;
+      const percentSaved = Math.round((savings / result.originalSize) * 100);
+      const formattedDuration = humanizeDuration(result.zopfliDuration);
+      setState({
+        status: Status.Processed,
+        results: [
+          `Original size: ${result.originalSize} bytes`,
+          `Uncompressed size: ${result.uncompressedSize} bytes`,
+          `Recompressed size: ${result.zopfliSize} bytes, saving ${savings} bytes (${percentSaved}%)`,
+          `Ran Zopfli with ${numiterations} iteration(s). Took ${formattedDuration}`,
+        ],
       });
-      duration = Date.now() - start;
-    } catch (err) {
-      console.error(err);
-      return fail("Could not re-compress file with Zopfli");
+    } else {
+      fail(result.errorMessage);
     }
-
-    let reinflated;
-    try {
-      reinflated = pako.inflate(zopflid);
-    } catch (err) {
-      console.error(err);
-      return fail("Could not decompress Zopfli'd file");
-    }
-    if (inflated.length !== reinflated.length) {
-      return fail(
-        "Zopfli compressed successfully, but de-compressing it resulted in a different file!"
-      );
-    }
-
-    const savings = file.size - zopflid.length;
-    const percentSaved = Math.round((savings / file.size) * 100);
-
-    const formattedDuration = humanizeDuration(duration);
-
-    setState({
-      status: Status.Processed,
-      results: [
-        `Original size: ${file.size} bytes`,
-        `Uncompressed size: ${inflated.length} bytes`,
-        `Recompressed size: ${zopflid.length} bytes, saving ${savings} bytes (${percentSaved}%)`,
-        `Ran Zopfli with ${numiterations} iteration(s). Took ${formattedDuration}`,
-      ],
-    });
   });
 
   const render = () => {
