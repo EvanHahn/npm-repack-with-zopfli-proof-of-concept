@@ -84,6 +84,19 @@ window.onload = () => {
       return fail("Could not re-compress file with Zopfli");
     }
 
+    let reinflated;
+    try {
+      reinflated = pako.inflate(zopflid);
+    } catch (err) {
+      console.error(err);
+      return fail("Could not decompress Zopfli'd file");
+    }
+    if (inflated.length !== reinflated.length) {
+      return fail(
+        "Zopfli compressed successfully, but de-compressing it resulted in a different file!"
+      );
+    }
+
     const savings = file.size - zopflid.length;
     const percentSaved = Math.round((savings / file.size) * 100);
 
