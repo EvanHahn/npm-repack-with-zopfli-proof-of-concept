@@ -8,7 +8,8 @@
   <body>
     <h1>Repack with Zopfli</h1>
     <p>
-      A proof-of-concept. See
+      A proof-of-concept. Doesn't upload any files; everything happens in the
+      browser. See
       <a
         href="https://github.com/npm/rfcs/pull/595"
         rel="noreferrer noopener"
@@ -16,7 +17,35 @@
         >npm/rfcs#595</a
       >.
     </p>
-    <div id="app"></div>
-    <script type="module" src="/main.js"></script>
+
+    <noscript>
+      <p>This page requires JavaScript.</p>
+    </noscript>
+
+    <ol>
+      <li>
+        Get a tarball of your favorite npm package with
+        <code>npm pack $PACKAGE_NAME</code>. For example, try
+        <code>npm pack express</code>.
+      </li>
+
+      <script type="module" src="/main.js"></script>
+
+      <form id="upload-form">
+        <li id="upload-step">
+          <label for="upload-input">Select it here:</label>
+          <input type="file" id="upload-input" accept=".tgz" required />
+        </li>
+        <li id="submit-step">
+          Click
+          <input id="submit-button" type="submit" value="this button" /> to
+          start the process
+        </li>
+      </form>
+    </ol>
+
+    <section id="results" hidden>
+      <h2>Results</h2>
+    </section>
   </body>
 </html>
