@@ -21,7 +21,6 @@
   "dependencies": {
     "@gfx/zopfli": "^1.0.15",
     "humanize-duration": "^3.27.2",
-    "pako": "^2.0.4",
-    "wasm-zopfli": "^1.0.2"
+    "pako": "^2.0.4"
   }
 }
